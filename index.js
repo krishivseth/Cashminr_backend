@@ -1,10 +1,21 @@
 const express = require('express');
 const cors = require('cors');
+require('dotenv').config();
+
+// Debug: Log environment variables (without sensitive data)
+console.log('🔍 Environment check:');
+console.log('NODE_ENV:', process.env.NODE_ENV);
+console.log('PORT:', process.env.PORT);
+console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
+console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'undefined');
+console.log('Available env vars:', Object.keys(process.env).filter(key => !key.includes('SECRET') && !key.includes('KEY') && !key.includes('PASSWORD')).join(', '));
 
 // Check environment variables before importing services
 if (!process.env.OPENAI_API_KEY) {
   console.error('❌ OPENAI_API_KEY environment variable is not set!');
   console.error('Please set OPENAI_API_KEY in your Railway environment variables.');
+  console.error('Env vars found:', Object.keys(process.env).length);
   process.exit(1);
 }
 
