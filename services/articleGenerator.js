@@ -119,17 +119,22 @@ Category: ${category}`;
   try {
     const openaiClient = getOpenAIClient();
     const completion = await openaiClient.chat.completions.create({
-      model: "gpt-5",
+      model: "gpt-4o-mini",
       messages: [
         {
           role: "user",
           content: prompt
         }
       ],
-      max_completion_tokens: 2000,
+      max_tokens: 2000,
     });
 
     const content = completion.choices[0].message.content;
+    
+    if (!content || content.trim() === '') {
+      console.error('Empty content received from OpenAI');
+      throw new Error('Generated content is empty');
+    }
     
     // Create a URL-friendly slug from the topic
     const slug = topic
@@ -148,7 +153,7 @@ Category: ${category}`;
       createdAt: new Date().toISOString(),
       updatedAt: new Date().toISOString(),
       readTime: Math.ceil(content.split(' ').length / 200), // Estimate reading time
-      excerpt: content.substring(0, 150) + '...'
+      excerpt: content.length > 150 ? content.substring(0, 150) + '...' : content
     };
     
     return article;
