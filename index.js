@@ -151,6 +151,24 @@ cron.schedule('0 * * * *', async () => {
   }
 });
 
+// TEMPORARY: Schedule article generation in 2 minutes for testing
+console.log('⏰ Scheduling test article generation in 2 minutes...');
+
+// Use setTimeout instead of cron for the test run
+setTimeout(async () => {
+  console.log('🧪 Running TEST article generation (scheduled for 2 minutes from startup)...');
+  try {
+    const article = await generateHourlyArticle();
+    if (article) {
+      console.log(`✅ Test article generated successfully: ${article.title}`);
+    } else {
+      console.log('⚠️ No new test article generated (possible duplicate)');
+    }
+  } catch (error) {
+    console.error('❌ Error generating test article:', error);
+  }
+}, 2 * 60 * 1000); // 2 minutes in milliseconds
+
 // Health check endpoint
 app.get('/health', (req, res) => {
   res.json({ 
