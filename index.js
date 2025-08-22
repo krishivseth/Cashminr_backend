@@ -1,5 +1,13 @@
 const express = require('express');
 const cors = require('cors');
+
+// Check environment variables before importing services
+if (!process.env.OPENAI_API_KEY) {
+  console.error('❌ OPENAI_API_KEY environment variable is not set!');
+  console.error('Please set OPENAI_API_KEY in your Railway environment variables.');
+  process.exit(1);
+}
+
 const cron = require('node-cron');
 const { generateDailyArticles, generateHourlyArticle } = require('./services/articleGenerator');
 const { getArticles, saveArticle } = require('./services/articleStorage');
@@ -150,24 +158,6 @@ cron.schedule('0 * * * *', async () => {
     console.error('Error generating hourly article:', error);
   }
 });
-
-// TEMPORARY: Schedule article generation in 2 minutes for testing
-console.log('⏰ Scheduling test article generation in 2 minutes...');
-
-// Use setTimeout instead of cron for the test run
-setTimeout(async () => {
-  console.log('🧪 Running TEST article generation (scheduled for 2 minutes from startup)...');
-  try {
-    const article = await generateHourlyArticle();
-    if (article) {
-      console.log(`✅ Test article generated successfully: ${article.title}`);
-    } else {
-      console.log('⚠️ No new test article generated (possible duplicate)');
-    }
-  } catch (error) {
-    console.error('❌ Error generating test article:', error);
-  }
-}, 2 * 60 * 1000); // 2 minutes in milliseconds
 
 // Health check endpoint
 app.get('/health', (req, res) => {

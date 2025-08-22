@@ -2,10 +2,20 @@ require('dotenv').config();
 const OpenAI = require('openai');
 const { saveArticle, checkDuplicate } = require('./articleStorage');
 
-// Initialize OpenAI client
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+// Initialize OpenAI client lazily to avoid startup errors
+let openai = null;
+
+function getOpenAIClient() {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY environment variable is not set');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 const financialTopics = [
   {
@@ -107,7 +117,8 @@ Topic: ${topic}
 Category: ${category}`;
 
   try {
-    const completion = await openai.chat.completions.create({
+    const openaiClient = getOpenAIClient();
+    const completion = await openaiClient.chat.completions.create({
       model: "gpt-5",
       messages: [
         {
