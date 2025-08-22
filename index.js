@@ -30,7 +30,7 @@ if (!process.env.OPENAI_API_KEY) {
 
 const cron = require('node-cron');
 const { generateDailyArticles, generateHourlyArticle } = require('./services/articleGenerator');
-const { getArticles, saveArticle } = require('./services/articleStorage');
+const { getArticles, saveArticle, saveArticles } = require('./services/articleStorage');
 
 const app = express();
 const PORT = process.env.PORT || 3001;
@@ -161,6 +161,31 @@ app.get('/api/articles/:id', async (req, res) => {
   } catch (error) {
     console.error('Error fetching article:', error);
     res.status(500).json({ error: 'Failed to fetch article' });
+  }
+});
+
+// Delete article by ID
+app.delete('/api/articles/:id', async (req, res) => {
+  try {
+    const { id } = req.params;
+    const articles = await getArticles();
+    const articleIndex = articles.findIndex(a => a.id === id);
+    
+    if (articleIndex === -1) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+    
+    const deletedArticle = articles.splice(articleIndex, 1)[0];
+    await saveArticles(articles);
+    
+    res.json({ 
+      success: true, 
+      message: 'Article deleted successfully',
+      deletedArticle 
+    });
+  } catch (error) {
+    console.error('Error deleting article:', error);
+    res.status(500).json({ error: 'Failed to delete article' });
   }
 });
 
