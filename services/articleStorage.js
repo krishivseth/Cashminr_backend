@@ -68,5 +68,6 @@ async function checkDuplicate(title, category) {
 module.exports = {
   getArticles,
   saveArticle,
+  saveArticles,
   checkDuplicate
 }; 
