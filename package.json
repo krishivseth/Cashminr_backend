@@ -7,10 +7,11 @@
     "start": "node index.js",
     "dev": "nodemon index.js",
     "test": "node test-generation.js",
-    "setup": "cp env.example .env && echo 'Please edit .env and add your CLAUDE_API_KEY'"
+    "test-hourly": "node test-hourly.js",
+    "setup": "cp env.example .env && echo 'Please edit .env and add your OPENAI_API_KEY'"
   },
   "dependencies": {
-    "@anthropic-ai/sdk": "^0.18.0",
+    "openai": "^4.28.0",
     "cors": "^2.8.5",
     "dotenv": "^17.2.1",
     "express": "^4.18.2",

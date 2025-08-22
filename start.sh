@@ -1,30 +1,30 @@
 #!/bin/bash
 
-# Cashminr Articles Server Startup Script
-
 echo "🚀 Starting Cashminr Articles Server..."
 
 # Check if .env file exists
 if [ ! -f .env ]; then
     echo "❌ .env file not found!"
-    echo "Please create a .env file with your CLAUDE_API_KEY"
-    echo "You can copy from env.example: cp env.example .env"
+    echo "Please create a .env file with your OPENAI_API_KEY"
+    echo "You can copy from env.example and add your actual API key"
     exit 1
 fi
 
-# Check if CLAUDE_API_KEY is set and not the placeholder
-if grep -q "CLAUDE_API_KEY=your_claude_api_key_here" .env; then
-    echo "❌ Please update your .env file with a valid Claude API key"
-    echo "Visit https://console.anthropic.com/ to get your API key"
-    exit 1
-fi
-
-# Check if node_modules exists
+# Check if dependencies are installed
 if [ ! -d "node_modules" ]; then
     echo "📦 Installing dependencies..."
     npm install
 fi
 
-# Start the server
-echo "✅ Starting server..."
+# Check if OPENAI_API_KEY is set and not the placeholder
+if grep -q "OPENAI_API_KEY=your_openai_api_key_here" .env; then
+    echo "❌ Please edit .env and add your actual OPENAI_API_KEY"
+    exit 1
+fi
+
+echo "✅ Environment configured correctly"
+echo "🚀 Starting server..."
+echo "📝 Article generation scheduled for every hour"
+echo "🔗 Health check: http://localhost:3001/health"
+
 npm start 

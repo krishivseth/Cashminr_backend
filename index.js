@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const cron = require('node-cron');
-const { generateDailyArticles } = require('./services/articleGenerator');
+const { generateDailyArticles, generateHourlyArticle } = require('./services/articleGenerator');
 const { getArticles, saveArticle } = require('./services/articleStorage');
 
 const app = express();
@@ -10,7 +10,7 @@ const PORT = process.env.PORT || 3001;
 // CORS configuration for production
 const corsOptions = {
   origin: process.env.NODE_ENV === 'production' 
-    ? ['https://your-vercel-domain.vercel.app'] // Replace with your actual Vercel domain
+    ? ['https://cashminr-frontend.vercel.app'] // Replace with your actual Vercel domain
     : ['http://localhost:5173', 'http://localhost:3000'],
   credentials: true,
   optionsSuccessStatus: 200
@@ -43,13 +43,63 @@ app.get('/api/articles/category/:category', async (req, res) => {
   }
 });
 
+// Get article by slug (for SEO-friendly URLs)
+app.get('/api/articles/slug/:slug', async (req, res) => {
+  try {
+    const { slug } = req.params;
+    const articles = await getArticles();
+    const article = articles.find(a => a.slug === slug);
+    
+    if (!article) {
+      return res.status(404).json({ error: 'Article not found' });
+    }
+    
+    res.json(article);
+  } catch (error) {
+    console.error('Error fetching article by slug:', error);
+    res.status(500).json({ error: 'Failed to fetch article' });
+  }
+});
+
+// Generate hourly article
+app.post('/api/articles/generate-hourly', async (req, res) => {
+  try {
+    // Check if API key is configured
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
+      return res.status(400).json({ 
+        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file.' 
+      });
+    }
+    
+    const newArticle = await generateHourlyArticle();
+    if (newArticle) {
+      res.json({ 
+        success: true, 
+        message: 'Generated new hourly article',
+        article: newArticle 
+      });
+    } else {
+      res.json({ 
+        success: false, 
+        message: 'No new article generated (possible duplicate)' 
+      });
+    }
+  } catch (error) {
+    console.error('Error generating hourly article:', error);
+    res.status(500).json({ 
+      error: 'Failed to generate hourly article',
+      details: error.message 
+    });
+  }
+});
+
 // Generate daily articles
 app.post('/api/articles/generate-daily', async (req, res) => {
   try {
     // Check if API key is configured
-    if (!process.env.CLAUDE_API_KEY || process.env.CLAUDE_API_KEY === 'your_claude_api_key_here') {
+    if (!process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY === 'your_openai_api_key_here') {
       return res.status(400).json({ 
-        error: 'Claude API key not configured. Please set CLAUDE_API_KEY in your .env file.' 
+        error: 'OpenAI API key not configured. Please set OPENAI_API_KEY in your .env file.' 
       });
     }
     
@@ -86,14 +136,18 @@ app.get('/api/articles/:id', async (req, res) => {
   }
 });
 
-// Schedule daily article generation at 9 AM
-cron.schedule('0 9 * * *', async () => {
-  console.log('Running daily article generation...');
+// Schedule hourly article generation every hour
+cron.schedule('0 * * * *', async () => {
+  console.log('Running hourly article generation...');
   try {
-    await generateDailyArticles();
-    console.log('Daily articles generated successfully');
+    const article = await generateHourlyArticle();
+    if (article) {
+      console.log(`Hourly article generated successfully: ${article.title}`);
+    } else {
+      console.log('No new hourly article generated (possible duplicate)');
+    }
   } catch (error) {
-    console.error('Error generating daily articles:', error);
+    console.error('Error generating hourly article:', error);
   }
 });
 
@@ -102,17 +156,13 @@ app.get('/health', (req, res) => {
   res.json({ 
     status: 'healthy', 
     timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV || 'development'
+    service: 'Cashminr Articles Server',
+    version: '2.0.0'
   });
 });
 
 app.listen(PORT, () => {
   console.log(`🚀 Cashminr Articles Server running on port ${PORT}`);
-  console.log(`📚 API endpoints available:`);
-  console.log(`   GET  /health - Server health check`);
-  console.log(`   GET  /api/articles - Get all articles`);
-  console.log(`   GET  /api/articles/category/:category - Get articles by category`);
-  console.log(`   GET  /api/articles/:id - Get specific article`);
-  console.log(`   POST /api/articles/generate-daily - Generate daily articles`);
-  console.log(`⏰ Daily article generation scheduled for 9:00 AM`);
+  console.log(`📝 Article generation scheduled for every hour`);
+  console.log(`🔗 Health check: http://localhost:${PORT}/health`);
 }); 

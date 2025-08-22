@@ -1,8 +1,10 @@
-const Anthropic = require('@anthropic-ai/sdk');
+require('dotenv').config();
+const OpenAI = require('openai');
 const { saveArticle, checkDuplicate } = require('./articleStorage');
 
-const anthropic = new Anthropic({
-  apiKey: process.env.CLAUDE_API_KEY,
+// Initialize OpenAI client
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY,
 });
 
 const financialTopics = [
@@ -90,115 +92,126 @@ Requirements:
 - Write 800-1200 words
 - Use clear, simple language that beginners can understand
 - Focus on paragraph-based explanations rather than bullet points
-- Include practical tips and actionable advice woven into paragraphs
+- Include practical tips and actionable advice
 - Structure with clear headings and subheadings
 - Focus on educational value, not sales pitches
-- Include relevant financial terms and definitions naturally in the text
 - End with a brief summary of key takeaways
-- Make it engaging and easy to read
-- Use paragraphs to explain concepts, avoid excessive bullet points
-- When you do use lists, keep them short (2-3 items max) and integrate them naturally
 
 Format the response in markdown with proper headings:
-- Use # for the main title (the topic)
+- Use # for the main title
 - Use ## for major section headings
 - Use ### for subsection headings
 - Use regular paragraphs for most content
-- Use numbered lists sparingly and only when absolutely necessary
 
 Topic: ${topic}
 Category: ${category}`;
 
   try {
-    const response = await anthropic.messages.create({
-      model: 'claude-3-5-sonnet-20241022',
-      max_tokens: 4000,
-      messages: [{ role: 'user', content: prompt }],
+    const completion = await openai.chat.completions.create({
+      model: "gpt-5",
+      messages: [
+        {
+          role: "user",
+          content: prompt
+        }
+      ],
+      max_completion_tokens: 2000,
     });
 
-    const content = response.content[0].text;
+    const content = completion.choices[0].message.content;
     
-    // Extract SEO keywords from the content
-    const keywords = extractKeywords(content, topic);
+    // Create a URL-friendly slug from the topic
+    const slug = topic
+      .toLowerCase()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-')
+      .trim();
     
-    return {
+    const article = {
+      id: Date.now().toString(),
       title: topic,
-      content: content,
+      slug: slug,
       category: category,
-      seoKeywords: keywords,
-      generatedDate: new Date().toISOString(),
-      publishedDate: new Date().toISOString(),
-      status: 'published',
-      wordCount: content.split(' ').length
+      content: content,
+      createdAt: new Date().toISOString(),
+      updatedAt: new Date().toISOString(),
+      readTime: Math.ceil(content.split(' ').length / 200), // Estimate reading time
+      excerpt: content.substring(0, 150) + '...'
     };
+    
+    return article;
   } catch (error) {
-    console.error('Error generating article:', error);
+    console.error('Error generating article with OpenAI:', error);
+    throw new Error(`Failed to generate article: ${error.message}`);
+  }
+}
+
+async function generateHourlyArticle() {
+  try {
+    // Select a random category
+    const randomCategory = financialTopics[Math.floor(Math.random() * financialTopics.length)];
+    
+    // Select a random topic from that category
+    const randomTopic = randomCategory.topics[Math.floor(Math.random() * randomCategory.topics.length)];
+    
+    // Check if this topic has already been covered
+    const isDuplicate = await checkDuplicate(randomTopic, randomCategory.category);
+    
+    if (isDuplicate) {
+      console.log(`Topic "${randomTopic}" already exists, generating alternative...`);
+      // Try a different topic from the same category
+      const alternativeTopics = randomCategory.topics.filter(t => t !== randomTopic);
+      if (alternativeTopics.length > 0) {
+        const alternativeTopic = alternativeTopics[Math.floor(Math.random() * alternativeTopics.length)];
+        const article = await generateArticle(alternativeTopic, randomCategory.category);
+        await saveArticle(article);
+        return article;
+      }
+    } else {
+      const article = await generateArticle(randomTopic, randomCategory.category);
+      await saveArticle(article);
+      return article;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error('Error in generateHourlyArticle:', error);
     throw error;
   }
 }
 
-function extractKeywords(content, title) {
-  // Simple keyword extraction - you can enhance this later
-  const commonFinancialTerms = [
-    'investing', 'mortgage', 'credit', 'retirement', 'savings',
-    'IRA', '401k', 'ETF', 'mutual fund', 'interest rate',
-    'credit score', 'debt', 'loan', 'refinance', 'down payment',
-    'portfolio', 'diversification', 'compound interest', 'budget',
-    'financial planning', 'wealth building', 'tax advantages'
-  ];
-  
-  const titleWords = title.toLowerCase().split(' ').filter(word => word.length > 3);
-  const contentWords = content.toLowerCase().split(' ').filter(word => word.length > 3);
-  
-  const allWords = [...titleWords, ...contentWords];
-  const keywords = new Set();
-  
-  commonFinancialTerms.forEach(term => {
-    if (allWords.some(word => word.includes(term) || term.includes(word))) {
-      keywords.add(term);
-    }
-  });
-  
-  return Array.from(keywords).slice(0, 8);
-}
-
 async function generateDailyArticles() {
-  const newArticles = [];
-  const today = new Date().toDateString();
-  
-  // Generate 5 articles, one from each category
-  for (const category of financialTopics) {
-    const availableTopics = [];
+  try {
+    console.log('Starting daily article generation...');
+    const articles = [];
     
-    // Check each topic for duplicates
-    for (const topic of category.topics) {
-      const isDuplicate = await checkDuplicate(topic, category.category);
-      if (!isDuplicate) {
-        availableTopics.push(topic);
-      }
-    }
-    
-    if (availableTopics.length > 0) {
-      // Pick a random topic from available ones
-      const randomTopic = availableTopics[Math.floor(Math.random() * availableTopics.length)];
+    // Generate one article for each category
+    for (const category of financialTopics) {
+      const randomTopic = category.topics[Math.floor(Math.random() * category.topics.length)];
       
-      try {
+      // Check for duplicates
+      const isDuplicate = await checkDuplicate(randomTopic, category.category);
+      if (!isDuplicate) {
         const article = await generateArticle(randomTopic, category.category);
         await saveArticle(article);
-        newArticles.push(article);
-        
-        // Add delay between API calls to avoid rate limiting
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      } catch (error) {
-        console.error(`Failed to generate article for ${category.category}:`, error);
+        articles.push(article);
+        console.log(`Generated article: ${article.title}`);
+      } else {
+        console.log(`Skipping duplicate topic: ${randomTopic}`);
       }
     }
+    
+    console.log(`Generated ${articles.length} new articles`);
+    return articles;
+  } catch (error) {
+    console.error('Error generating daily articles:', error);
+    throw error;
   }
-  
-  return newArticles;
 }
 
 module.exports = {
-  generateDailyArticles,
-  generateArticle
+  generateArticle,
+  generateHourlyArticle,
+  generateDailyArticles
 }; 
