@@ -9,7 +9,16 @@ console.log('PORT:', process.env.PORT);
 console.log('OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
 console.log('OPENAI_API_KEY length:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.length : 0);
 console.log('OPENAI_API_KEY starts with:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 10) + '...' : 'undefined');
-console.log('Available env vars:', Object.keys(process.env).filter(key => !key.includes('SECRET') && !key.includes('KEY') && !key.includes('PASSWORD')).join(', '));
+
+// Check for Railway-prefixed variables
+console.log('\n🔍 Checking for API key variations:');
+Object.keys(process.env).forEach(key => {
+  if (key.includes('OPENAI') || key.includes('API') || key.includes('KEY')) {
+    console.log(`Found: ${key} = ${process.env[key] ? process.env[key].substring(0, 10) + '...' : 'empty'}`);
+  }
+});
+
+console.log('\nAvailable env vars:', Object.keys(process.env).filter(key => !key.includes('SECRET') && !key.includes('KEY') && !key.includes('PASSWORD')).join(', '));
 
 // Check environment variables before importing services
 if (!process.env.OPENAI_API_KEY) {
