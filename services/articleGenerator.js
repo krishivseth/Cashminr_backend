@@ -181,101 +181,71 @@ const financialTopics = [
 ];
 
 async function generateArticle(topic, category) {
-  const prompt = `You are a senior financial expert with 15+ years of experience writing for Cashminr, a premium financial education platform. Write a comprehensive, sophisticated article about: "${topic}"
+  const prompt = `You are a financial writer for Cashminr who excels at finding sophisticated but accessible personal finance topics. Your readers are financially aware but not professionals - think educated consumers who want to go beyond basic advice.
 
-CRITICAL REQUIREMENTS:
+Your mission: Generate and write about a specific, non-generic personal finance topic that is:
 
-1. THINKING AND ANALYSIS REQUIREMENTS:
-- DO NOT simply regurgitate predefined content or follow rigid templates
-- Think critically about the topic and provide your own expert analysis and insights
-- Consider current market conditions, economic trends, and regulatory changes that affect this topic
-- Draw from your knowledge of financial theory, industry best practices, and real-world case studies
-- Provide nuanced perspectives that go beyond surface-level explanations
-- Include counterintuitive insights and challenge common assumptions when appropriate
-- Consider how this topic intersects with other areas of personal finance
-- Address emerging trends, technologies, or regulatory changes that could impact this topic
+TOPIC CRITERIA:
+✅ SOPHISTICATED: Goes beyond obvious advice everyone knows
+✅ ACCESSIBLE: Regular people can understand and apply it (no CPA/CFP expertise required)  
+✅ SPECIFIC: Focuses on particular situations, strategies, or decisions
+✅ ACTIONABLE: Readers can implement the insights
+✅ CURRENT: Relevant to today's economic environment
+✅ NON-OBVIOUS: Provides insights people wouldn't naturally think of
 
-2. CONTENT DEPTH AND SOPHISTICATION:
-- Write 1200-1800 words of advanced, nuanced content
-- Assume readers have basic financial literacy but want to deepen their knowledge
-- Cover complex concepts with detailed explanations and real-world applications
-- Include intermediate-to-advanced strategies and considerations
-- Discuss both opportunities and risks/caveats of each topic
-- Go beyond the obvious - explore edge cases, advanced strategies, and expert-level insights
+❌ AVOID: Generic topics, expert-only strategies, basic financial literacy
 
-3. MANDATORY STATISTICAL EXAMPLES:
-You MUST include specific, realistic calculations and examples that demonstrate your understanding. Include at least 3-4 detailed calculations that are relevant to the specific topic. Think creatively about which calculations would be most illuminating for readers. Examples might include:
+EXAMPLES of the right complexity level:
+- "Why Your Emergency Fund Location Matters More Than the Amount"
+- "How Rising Interest Rates Change Your Mortgage Payoff Strategy"
+- "When Credit Card Points Actually Cost You Money: Hidden Calculations"
+- "The Psychology Behind Why Dollar-Cost Averaging Often Fails"
+- "How Remote Work Changes Your Tax Strategy (Without Moving States)"
+- "Why Your 401k Match Timing Could Cost You Thousands"
+- "The Hidden Costs of 'Free' Financial Apps and When to Pay Instead"
+- "How Inflation Actually Affects Different Types of Debt Differently"
 
-FOR MORTGAGES:
-- "A $450,000 30-year mortgage at 6.25% would cost $2,771 monthly and $547,560 in total interest over the loan term. With an extra $200 monthly payment, you'd save $108,000 in interest and pay off 5 years early."
-- "A 15-year mortgage for the same amount at 5.75% would cost $3,735 monthly but only $222,300 in total interest, saving $325,260 compared to the 30-year option."
-- Consider break-even analysis, refinancing scenarios, or investment opportunity cost calculations
+CURRENT CONTEXT TO CONSIDER:
+- Interest rate environment and its ripple effects
+- Inflation impact on different financial decisions
+- Remote work changing financial planning
+- Technology changing how we manage money
+- Supply chain issues affecting investments and spending
+- Generational wealth transfer happening now
+- Housing market dynamics
+- Credit market changes
 
-FOR INVESTING:
-- "Investing $15,000 in an S&P 500 index fund averaging 9.2% returns would grow to $67,200 in 15 years. With monthly contributions of $500, you'd reach $1.2 million in 25 years."
-- "A $50,000 investment in a diversified portfolio with 7% returns would provide $3,500 annually in dividends, growing to $7,000+ annually after 10 years with dividend reinvestment."
-- Consider risk-adjusted returns, correlation analysis, or tax-efficient investing scenarios
+THINKING PROCESS:
+1. What financial situations do people face that have non-obvious complications?
+2. What common advice might be wrong in current conditions?
+3. What timing or implementation details make a big difference?
+4. What psychological biases affect financial decisions?
+5. How do current events create new considerations for personal finance?
+6. What technology changes create new opportunities or risks?
 
-FOR SAVINGS:
-- "Saving $750 monthly at 4.5% interest would reach $367,000 in 20 years. If inflation averages 2.5%, the real value would be $223,000 in today's dollars."
-- "A CD ladder with $50,000 spread across 1-5 year terms at current rates (4.25-5.1%) would generate approximately $2,200 annually in interest."
-- Consider opportunity cost analysis, emergency fund sizing, or savings rate optimization
+ARTICLE REQUIREMENTS:
+- 1200-1800 words, accessible but sophisticated
+- Include 3-4 specific calculations or examples with real numbers where necessary
+- Address current market conditions (2024-2025)
+- Provide counterintuitive insights where appropriate
+- Include practical implementation steps
+- Balance opportunities with realistic risks
+- Use clear language but don't oversimplify complex topics
 
-FOR RETIREMENT:
-- "Starting at age 30, contributing $800 monthly to a 401(k) with 7.5% returns and 3% employer match would give you $2.1 million by age 65. Delaying to age 35 would reduce this to $1.4 million."
-- "A 65-year-old with $1 million in retirement savings using the 4% rule could withdraw $40,000 annually, adjusted for inflation, with 90% confidence of not running out of money over 30 years."
-- Consider sequence of returns risk, withdrawal strategy analysis, or healthcare cost projections
+STRUCTURE:
+# [Your Generated Topic Title]
+## Why This Matters Right Now
+## [Main Analysis Sections - You Choose]
+## What This Means for You
+## Action Steps
+## Bottom Line
 
-FOR CREDIT:
-- "A $10,000 credit card balance at 18.99% interest would take 17 years to pay off with minimum payments (3% of balance), costing $8,400 in interest. Paying $300 monthly would clear it in 4 years with only $2,800 in interest."
-- "Transferring a $15,000 balance to a 0% APR card for 18 months with a 3% transfer fee ($450) would save $2,700 in interest over 18 months."
-- Consider credit utilization impact, debt-to-income ratios, or balance transfer arbitrage
+CRITICAL: Choose a topic that makes readers think "I never considered that" or "That's not what I expected" - but something they can still understand and act on.
 
-FOR TAXES:
-- Consider tax-loss harvesting scenarios, bracket optimization, or charitable giving strategies
-- Include calculations showing tax efficiency of different investment vehicles
-
-FOR INSURANCE:
-- Consider cost-benefit analysis of different coverage levels, self-insurance calculations, or premium optimization
-- Include risk assessment calculations and probability-weighted cost analysis
-
-4. STRUCTURE REQUIREMENTS:
-- Begin with a compelling hook that establishes the topic's importance and your unique perspective
-- Include a "Key Takeaways" section with 3-5 bullet points that capture your expert insights
-- Use clear headings and subheadings (## for major sections, ### for subsections)
-- Include a "Risks and Considerations" section that reflects your expert judgment
-- End with actionable next steps and resources for further learning
-- Include relevant regulatory considerations where applicable
-- Consider adding sections that address common misconceptions or emerging trends
-
-5. WRITING STYLE:
-- Professional but accessible tone that reflects your expertise
-- Use active voice and clear, concise language
-- Include expert insights and industry perspectives that demonstrate deep knowledge
-- Address common misconceptions and pitfalls with authority
-- Provide context for why the topic matters to readers' financial health
-- Express your own informed opinions and recommendations where appropriate
-
-6. FORMATTING:
-- Use proper markdown formatting
-- Include tables for comparing options when relevant
-- Use bullet points sparingly and only for lists of key points
-- Include callout boxes for important warnings or tips
-- Consider using charts or visual elements described in text when helpful
+Generate the topic and write the complete article now.
 
 Topic: ${topic}
-Category: ${category}
-
-CRITICAL THINKING INSTRUCTIONS:
-Before writing, take time to:
-1. Analyze the current economic environment and how it affects this topic
-2. Consider recent regulatory changes or proposed legislation
-3. Think about emerging trends or technologies that could impact this area
-4. Reflect on common mistakes or misconceptions you've observed in practice
-5. Consider how this topic relates to broader financial planning strategies
-6. Identify opportunities for readers that might not be immediately obvious
-
-Remember: This article should serve as a comprehensive resource that readers can reference for years to come. Focus on timeless principles while acknowledging current market conditions and regulatory considerations. Your goal is to provide analysis that goes beyond what readers could find in basic financial education materials.`;
+Category: ${category}`;
 
   try {
     const openaiClient = getOpenAIClient();
